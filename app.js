@@ -18,6 +18,18 @@ const startDbAndServer = async () => {
 };
 startDbAndServer();
 
+const districtDetailsResponse = (dbObj) => {
+  return {
+    districtId: dbObj.district_id,
+    districtName: dbObj.district_name,
+    stateId: dbObj.state_id,
+    cases: dbObj.cases,
+    cured: dbObj.cured,
+    active: dbObj.active,
+    deaths: dbObj.deaths,
+  };
+};
+
 const displayStateData = (dbObjData) => {
   return {
     stateId: dbObjData.state_id,
@@ -31,14 +43,14 @@ app.get("/states/", async (request, response) => {
   const statesListQuery = `
     SELECT * FROM state
     ;`;
-  stateArr = await db.all(statesListQuery);
+  const stateArr = await db.all(statesListQuery);
   response.send(stateArr.map((eachState) => displayStateData(eachState)));
 });
 //get a state detail
 app.get("/states/:stateId/", async (request, response) => {
   const { stateId } = request.params;
   const getAStateQuery = `
-    SELECT * FROM state
+    SELECT state_id AS stateId,state_name AS stateName, population FROM state
     WHERE state_id=${stateId}
     ;`;
   const stateDetails = await db.get(getAStateQuery);
@@ -58,7 +70,16 @@ app.post("/districts/", async (request, response) => {
 app.get("/districts/:districtId/", async (request, response) => {
   const { districtId } = request.params;
   const getADistrictQuery = `
-    SELECT * FROM district
+    SELECT 
+    district_id AS districtId,
+    district_name AS districtName,
+    state_id AS stateId,
+    cases,
+    cured,
+    active,
+    deaths
+    
+    FROM district
     WHERE district_id=${districtId}
     ;`;
   const districtDetails = await db.get(getADistrictQuery);
@@ -93,7 +114,26 @@ app.put("/districts/:districtId/", async (request, response) => {
   response.send("District Details Updated");
 });
 // get total statistics of state
-app.get("/states/:stateId/stats/", (request, response) => {
+app.get("/states/:stateId/stats/", async (request, response) => {
   const { stateId } = request.params;
-  const totalCasesQuery = `SELECT cases,cured,active,deaths`;
+  const totalCasesQuery = `SELECT
+  sum(cases) as totalCases,sum(cured) AS totalCured,sum(active) AS totalActive,sum(deaths) AS totalDeaths
+  FROM district
+  WHERE state_id=${stateId}
+
+  ;`;
+  total = await db.get(totalCasesQuery);
+  response.send(total);
 });
+//get state by district
+app.get("/districts/:districtId/details/", async (request, response) => {
+  const { districtId } = request.params;
+  const getStateNameQuery = `
+    SELECT state_name as stateName
+    FROM state join district
+    WHERE district_id=${districtId}
+    ;`;
+  const stateName = await db.get(getStateNameQuery);
+  response.send(stateName);
+});
+module.exports = app;

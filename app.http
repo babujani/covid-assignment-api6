@@ -1,7 +1,7 @@
 GET http://localhost:3000/states/
 ###
 
-GET http://localhost:3000/states/2 HTTP/1.1
+GET http://localhost:3000/states/8/ HTTP/1.1
 ###
 POST http://localhost:3000/districts/
 Content-Type: application/json
@@ -15,7 +15,7 @@ Content-Type: application/json
     "deaths":8
 }
 ###
-GET http://localhost:3000/districts/2 HTTP/1.1
+GET http://localhost:3000/districts/322/ HTTP/1.1
 ###
 DELETE http://localhost:3000/districts/1
 ###
@@ -30,3 +30,7 @@ Content-Type: application/json
     "active":3000,
     "deaths":104
 }
+###
+GET  http://localhost:3000/states/5/stats/
+###
+GET  http://localhost:3000/districts/11/details/
